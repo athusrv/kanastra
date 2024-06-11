@@ -14,13 +14,13 @@ export const DocumentsPagination = () => {
   const { currentPage, totalPages, setCurrentPage } = usePagination();
 
   const onPrevious = useCallback(() => {
-    if (currentPage == 1) return;
+    if (currentPage <= 1) return;
 
     setCurrentPage(currentPage - 1);
   }, [setCurrentPage, currentPage]);
 
   const onNext = useCallback(() => {
-    if (currentPage == totalPages) return;
+    if (currentPage >= totalPages) return;
 
     setCurrentPage(currentPage + 1);
   }, [setCurrentPage, currentPage, totalPages]);
@@ -31,7 +31,7 @@ export const DocumentsPagination = () => {
         <PaginationItem>
           <PaginationPrevious
             data-testid="previous-page-btn"
-            disabled={currentPage == 1}
+            disabled={currentPage <= 1}
             onClick={onPrevious}
           />
         </PaginationItem>
@@ -61,7 +61,7 @@ export const DocumentsPagination = () => {
         <PaginationItem>
           <PaginationNext
             data-testid="next-page-btn"
-            disabled={currentPage == totalPages}
+            disabled={currentPage >= totalPages}
             onClick={onNext}
           />
         </PaginationItem>
