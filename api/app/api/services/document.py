@@ -31,7 +31,7 @@ class DocumentService:
         bgtask = celery.chain(
             celery.group(
                 process_document.s(part, document.id)
-                for part in chunk(lines[1:100000], nct)
+                for part in chunk(lines[1:], nct)
             ),
             complete_document.s(),
         )
