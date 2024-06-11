@@ -1,0 +1,62 @@
+version: "3.1"
+services:
+  redis:
+    image: "bitnami/redis:latest"
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes
+    restart: on-failure
+
+  worker:
+    build: .
+    command: celery -A app.worker.celery worker -B --loglevel=DEBUG --logfile=logs/celery.log
+    volumes:
+      - ./:/kanastra-api
+    depends_on:
+      - redis
+    env_file:
+      - ./.env
+    restart: on-failure
+
+  flower:
+    build: .
+    command: celery --broker=redis://redis:6379/0 flower --port=5555
+    ports:
+      - 5555:5555
+    depends_on:
+      - redis
+      - worker
+    env_file:
+      - ./.env
+    restart: on-failure
+
+  kanastradb:
+    image: postgres:15.2
+    restart: on-failure
+    container_name: kanastradb
+    expose:
+      - 5435
+    ports:
+      - 5435:5432
+    volumes:
+      - ./app/core/sql:/docker-entrypoint-initdb.d
+    environment:
+      - POSTGRES_USER=sup
+      - POSTGRES_PASSWORD=pgpassword
+      - POSTGRES_MULTIPLE_DATABASES=kanastradb
+
+  kanastra-api:
+    build: .
+    container_name: kanastra-api
+    restart: on-failure
+    expose:
+      - 5002
+    ports:
+      - 5002:5000
+    depends_on:
+      - kanastradb
+      - redis
+      - worker
+    volumes:
+      - ./:/kanastra-api
+    env_file:
+      - ./.env
